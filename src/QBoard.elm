@@ -1,6 +1,7 @@
-module QBoard exposing (QBoard, QPiece, startQBoard, lookupSpot)
+module QBoard exposing (QBoard, QPiece, startQBoard, lookupSpot, moveQPiece, toNormalPiece, resolveCollision)
 
 import Board exposing (Board, startBoard)
+import Board exposing (Piece)
 
 -- MODEL
 
@@ -18,12 +19,6 @@ startQBoard : QBoard
 startQBoard = [startBoard]
 
 -- UPDATE
-
-quantumView : QBoard -> List QPiece
-quantumView _ = [] -- TODO: Write function
--- This function converts the list of boards to
--- a single board with quantum pieces.
-
 lookupSpot : QBoard -> Int -> Int -> Maybe QPiece
 lookupSpot qboard x y =
     let
@@ -33,4 +28,26 @@ lookupSpot qboard x y =
             |> List.filter (\p -> p.y == y)
     in
         List.head pieces
+
+moveQPiece : QBoard -> QPiece -> Int -> Int -> QBoard
+moveQPiece qboard _ _ _ =
+    qboard
+
+quantumView : QBoard -> List QPiece
+quantumView _ = [] -- TODO: Write function
+-- This function converts the list of boards to
+-- a single board with quantum pieces.
+
+resolveCollision : QBoard -> Cmd msg
+resolveCollision _ = Cmd.none -- TODO:
+-- This function asks for a random measurement
+-- when there's a conflict on the board.
+
+toNormalPiece : QPiece -> Piece
+toNormalPiece qp =
+    { owner = qp.owner
+    , size  = qp.size
+    , x     = qp.x
+    , y     = qp.y
+    }
 

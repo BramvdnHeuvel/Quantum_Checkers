@@ -14,6 +14,7 @@ type alias GameView =
 type BoardViewMode
     = Idle
     | FromPerspectiveOf QPiece
+    | FinishedGame
 
 defaultGameView : GameView
 defaultGameView =
@@ -52,6 +53,19 @@ selectPiece game x y =
         
         -- The player clicked away to deactivate the option,
         -- or they clicked on a field to make a move.
-        FromPerspectiveOf _ ->
+        FromPerspectiveOf p ->
             -- TODO: Execute the proposed turn.
+            let
+                newBoard : QBoard
+                newBoard = QBoard.moveQPiece game.board p x y
+            in
+            ( { game
+              | board = newBoard
+              }
+            , QBoard.resolveCollision newBoard
+            )
+        
+        -- If the game's finished,
+        -- ignore all board interaction
+        FinishedGame ->
             (game, Cmd.none)
