@@ -3,6 +3,8 @@ module Main exposing (main)
 import Browser
 import Html exposing (Html, text)
 
+import Game exposing (GameView, defaultGameView)
+
 main = Browser.element
     { init = init
     , update = update
@@ -13,29 +15,25 @@ main = Browser.element
 
 -- MODEL
 
-type alias Model =
-    { turn : Int
-    , board : List (List Int)
-    }
+type alias Model = GameView
 
 init : () -> (Model, Cmd msg)
 init _ =
-    ( { turn = 1
-      , board = []
-      }
+    ( defaultGameView
     , Cmd.none
     )
 
 -- UPDATE
 
 type Msg
-    = Foo
+    = SelectPiece Int Int
 
 update : Msg -> Model -> (Model, Cmd msg)
 update msg model = 
-    ( model
-    , Cmd.none
-    )
+    model
+    -- case (msg) of
+    --     SelectPiece x y ->
+    --         selectPiece model x y
 
 
 -- SUBSCRIPTIONS
