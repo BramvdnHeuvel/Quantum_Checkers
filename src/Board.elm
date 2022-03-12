@@ -1,4 +1,4 @@
-module Board exposing (Board, startBoard, Piece, Player(..))
+module Board exposing (Board, startBoard, Piece, Player(..), PieceSize)
 
 -- MODEL
 

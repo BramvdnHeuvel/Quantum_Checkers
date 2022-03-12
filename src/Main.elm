@@ -29,11 +29,10 @@ type Msg
     = SelectPiece Int Int
 
 update : Msg -> Model -> (Model, Cmd msg)
-update msg model = 
-    model
-    -- case (msg) of
-    --     SelectPiece x y ->
-    --         selectPiece model x y
+update msg model =
+    case (msg) of
+        SelectPiece x y ->
+            Game.selectPiece model x y
 
 
 -- SUBSCRIPTIONS
