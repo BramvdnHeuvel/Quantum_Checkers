@@ -18,21 +18,22 @@ main = Browser.element
 type alias Model = GameView
 
 init : () -> (Model, Cmd msg)
-init _ =
-    ( defaultGameView
-    , Cmd.none
-    )
+init _ = Game.resetGame
 
 -- UPDATE
 
 type Msg
     = SelectPiece Int Int
+    | ResetGame
 
 update : Msg -> Model -> (Model, Cmd msg)
 update msg model =
     case (msg) of
         SelectPiece x y ->
             Game.selectPiece model x y
+        
+        ResetGame ->
+            Game.resetGame
 
 
 -- SUBSCRIPTIONS

@@ -1,4 +1,4 @@
-module Game exposing (GameView, defaultGameView, selectPiece)
+module Game exposing (GameView, defaultGameView, selectPiece, resetGame)
 
 import QBoard exposing (QBoard, QPiece, startQBoard)
 import Board  exposing (Player(..))
@@ -23,6 +23,9 @@ defaultGameView =
     }
 
 -- UPDATE
+
+resetGame : (GameView, Cmd msg)
+resetGame = (defaultGameView, Cmd.none)
 
 selectPiece : GameView -> Int -> Int -> (GameView, Cmd msg)
 selectPiece game x y =
