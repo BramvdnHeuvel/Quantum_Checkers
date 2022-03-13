@@ -115,7 +115,7 @@ startPieces rows =
         fillRow color y =
             List.range 1 boardSize
                 |> List.filter (\x -> modBy 2 (x + y) == 0)
-                |> List.map (\x -> Piece color Single x y)
+                |> List.map (\x -> Piece color Double x y)
 
         fillRows : Int -> Int -> Player -> List Piece
         fillRows start end color =

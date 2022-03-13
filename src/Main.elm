@@ -1,7 +1,7 @@
 module Main exposing (main)
 
 import Browser
-import Html exposing (Html)
+import Html exposing (Html, div, p, text)
 
 import Game exposing (GameView)
 import Layout exposing (Msg(..), showBoard)
@@ -47,6 +47,13 @@ subscriptions _ =
 -- VIEW
 
 view : Model -> Html Msg
-view model = showBoard model
+view model = div
+    []
+    [ showBoard model
+    , p
+        []
+        [ text ((String.fromInt (List.length model.board)) ++ " quantum boards")
+        ]
+    ]
 
 

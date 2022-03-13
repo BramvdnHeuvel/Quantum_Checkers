@@ -1,7 +1,5 @@
 module Operations exposing (countValues, countIncomparableValues, combineIncomparableValues)
 import Dict exposing (Dict)
-import Html exposing (a)
-import Html exposing (b)
 
 -- This file contains a lot of helper functions.
 

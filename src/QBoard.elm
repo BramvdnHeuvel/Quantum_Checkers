@@ -9,7 +9,11 @@ import Html exposing (p)
 
 -- MODEL
 
-type alias QBoard = List Board
+type alias QBoard = List Boardlet
+
+type alias Boardlet = { board  : Board
+                      , weight : Int
+                      }
 
 type alias QPiece =
     { owner : Board.Player
@@ -25,7 +29,10 @@ type Measurement
     | Empty
 
 startQBoard : QBoard
-startQBoard = [startBoard]
+startQBoard = [ { board = startBoard
+                , weight = 1
+                }
+              ]
 
 -- UPDATE
 
@@ -41,12 +48,20 @@ canMoveTo qboard qpiece =
         piece = toNormalPiece qpiece
     in
         showPerspective qboard qpiece
-            |> List.map (Board.canWalkTo piece)
+            |> qBoardmap (Board.canWalkTo piece)
             |> List.concat
 
 canQuantum : QBoard -> QPiece -> Bool
 canQuantum qboard qpiece =
     List.length (canMoveTo qboard qpiece) >= 2
+
+filterBoards : (Board -> Bool) -> QBoard -> QBoard
+filterBoards f qboard =
+    let
+        filter : Boardlet -> Bool
+        filter b = f b.board
+    in
+        List.filter filter qboard
 
 lookupSpot : QBoard -> Int -> Int -> Maybe QPiece
 lookupSpot qboard x y =
@@ -83,8 +98,22 @@ moveQPiece qboard qpiece x y =
                     InvalidDestination ->
                         board
         in
-            List.map updateBoard qboard
-                
+            editBoards updateBoard qboard
+
+qBoardmap : (Board -> a) -> QBoard -> List a
+qBoardmap f qboard =
+    let
+        alterBoard b = f b.board
+    in
+        List.map alterBoard qboard                
+
+editBoards : (Board -> Board) -> QBoard -> QBoard
+editBoards f qboard =
+    let
+        updateBoard : Boardlet -> Boardlet
+        updateBoard b = { b | board = f b.board }
+    in
+        List.map updateBoard qboard
 
 quantumView : QBoard -> List QPiece
 quantumView qboard =
@@ -101,7 +130,7 @@ quantumView qboard =
             QPiece piece.owner piece.size piece.x piece.y (odds count)
     in
         qboard
-            |> List.map countIncomparableValues  -- Optimize this
+            |> qBoardmap countIncomparableValues  -- Optimize this
             |> List.concat
             |> combineIncomparableValues
             |> List.map toQPiece
@@ -117,7 +146,7 @@ showPerspective qboard qpiece =
         p : Piece
         p = toNormalPiece qpiece
     in
-        List.filter (List.member p) qboard
+        filterBoards (List.member p) qboard
 
 toNormalPiece : QPiece -> Piece
 toNormalPiece qp =
