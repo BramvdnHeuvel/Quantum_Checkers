@@ -1,6 +1,6 @@
-module Game exposing (GameView, defaultGameView, selectPiece, resetGame)
+module Game exposing (GameView, defaultGameView, selectPiece, resetGame, measureAt)
 
-import QBoard exposing (QBoard, QPiece, startQBoard)
+import QBoard exposing (Measurement, QBoard, QPiece, startQBoard)
 import Board  exposing (Player(..))
 
 -- MODEL
@@ -24,6 +24,10 @@ defaultGameView =
     }
 
 -- UPDATE
+
+measureAt : GameView -> Int -> Int -> Measurement -> (GameView, Cmd msg)
+measureAt game _ _ _ =
+    (game, Cmd.none) -- TODO: Execute a measurement on the board.
 
 resetGame : (GameView, Cmd msg)
 resetGame = (defaultGameView, Cmd.none)

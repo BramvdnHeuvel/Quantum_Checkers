@@ -4,6 +4,7 @@ import Browser
 import Html exposing (Html, text)
 
 import Game exposing (GameView, defaultGameView)
+import Layout exposing (Msg(..), showBoard)
 
 main = Browser.element
     { init = init
@@ -22,10 +23,6 @@ init _ = Game.resetGame
 
 -- UPDATE
 
-type Msg
-    = SelectPiece Int Int
-    | ResetGame
-
 update : Msg -> Model -> (Model, Cmd msg)
 update msg model =
     case (msg) of
@@ -34,6 +31,9 @@ update msg model =
         
         ResetGame ->
             Game.resetGame
+        
+        Measure x y m ->
+            Game.measureAt model x y m
 
 
 -- SUBSCRIPTIONS
@@ -45,7 +45,7 @@ subscriptions model =
 
 -- VIEW
 
-view : Model -> Html msg
-view model = text "Hello world!"
+view : Model -> Html Msg
+view model = showBoard model
 
 

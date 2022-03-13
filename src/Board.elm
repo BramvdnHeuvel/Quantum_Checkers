@@ -1,6 +1,11 @@
-module Board exposing (Board, startBoard, Piece, Player(..), PieceSize)
+module Board exposing (Board, Piece, Player(..), PieceSize(..)
+                      , boardSize, startBoard
+                      )
 
 -- MODEL
+
+boardSize : Int
+boardSize = 10
 
 type alias Board = List Piece
 

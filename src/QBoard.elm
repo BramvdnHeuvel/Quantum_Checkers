@@ -1,4 +1,4 @@
-module QBoard exposing (QBoard, QPiece, startQBoard, lookupSpot, moveQPiece, toNormalPiece, resolveCollision)
+module QBoard exposing (QBoard, QPiece, lookupSpot, moveQPiece, toNormalPiece, resolveCollision, startQBoard, Measurement, quantumView)
 
 import Board exposing (Board, startBoard)
 import Board exposing (Piece)
@@ -14,6 +14,11 @@ type alias QPiece =
     , y     : Int
     , odds  : Float
     }
+
+type Measurement
+    = Black
+    | White
+    | Empty
 
 startQBoard : QBoard
 startQBoard = [startBoard]
@@ -34,7 +39,21 @@ moveQPiece qboard _ _ _ =
     qboard
 
 quantumView : QBoard -> List QPiece
-quantumView _ = [] -- TODO: Write function
+quantumView _ = [ -- This is mockup data.
+    { owner = Board.Black
+    , size  = Board.Single
+    , x = 1
+    , y = 1
+    , odds = 100
+    },
+    
+    { owner = Board.White
+    , size  = Board.Single
+    , x = 2
+    , y = 2
+    , odds = 100
+    }]
+-- TODO: Write function
 -- This function converts the list of boards to
 -- a single board with quantum pieces.
 
