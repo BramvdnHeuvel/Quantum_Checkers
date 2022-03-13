@@ -52,6 +52,8 @@ selectPiece game x y =
                     Just p ->
                         if p.owner /= game.turn then
                             (game, Cmd.none)
+                        else if not (QBoard.canMove game.board p) then
+                            (game, Cmd.none)
                         else
                             ( { game | showMode = FromPerspectiveOf p}
                             , Cmd.none
@@ -61,6 +63,8 @@ selectPiece game x y =
         -- or they clicked on a field to make a move.
         FromPerspectiveOf p ->
             -- TODO: Execute the proposed turn.
+            -- TODO: If the player may make an extra turn, already select
+            --          that piece to make it clearer to the player.
             let
                 newBoard : QBoard
                 newBoard = QBoard.moveQPiece game.board p x y

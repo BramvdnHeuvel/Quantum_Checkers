@@ -1,6 +1,6 @@
 module QBoard exposing ( Measurement, QBoard, QPiece
                        , lookupSpot, moveQPiece, toNormalPiece, resolveCollision
-                       , showPerspective, startQBoard, quantumView
+                       , showPerspective, startQBoard, quantumView, canMove
                        )
 
 import Board exposing (Board, Piece, startBoard)
@@ -24,9 +24,14 @@ type Measurement
     | Empty
 
 startQBoard : QBoard
-startQBoard = [startBoard]
+startQBoard = [startBoard, []]
 
 -- UPDATE
+
+canMove : QBoard -> QPiece -> Bool
+canMove _ _ =
+    True -- TODO: Determine whether the piece may move.
+
 lookupSpot : QBoard -> Int -> Int -> Maybe QPiece
 lookupSpot qboard x y =
     let
@@ -66,12 +71,12 @@ resolveCollision _ = Cmd.none -- TODO:
 -- when there's a conflict on the board.
 
 showPerspective : QBoard -> QPiece -> QBoard
-showPerspective _ qpiece =
+showPerspective qboard qpiece =
     let
         p : Piece
         p = toNormalPiece qpiece
     in
-        []
+        List.filter (List.member p) qboard
 
 toNormalPiece : QPiece -> Piece
 toNormalPiece qp =
