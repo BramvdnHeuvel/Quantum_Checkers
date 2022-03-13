@@ -2,7 +2,9 @@ module Game exposing ( BoardViewMode(..), GameView
                      , defaultGameView, selectPiece, resetGame, measureAt
                      )
 
-import QBoard exposing (Measurement, QBoard, QPiece, startQBoard)
+import QBoard exposing ( Measurement, QBoard, QPiece
+                       , startQBoard
+                       )
 import Board  exposing (Player(..))
 
 -- MODEL

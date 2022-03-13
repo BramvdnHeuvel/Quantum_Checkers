@@ -1,11 +1,13 @@
 module QBoard exposing ( Measurement, QBoard, QPiece
                        , lookupSpot, moveQPiece, toNormalPiece, resolveCollision
-                       , showPerspective, startQBoard, quantumView, canMove, canMoveTo, makeQuantumMove, optimizeQBoard
+                       , showPerspective, startQBoard, quantumView, canMove
+                       , canMoveTo, makeQuantumMove, optimizeQBoard
                        )
 
-import Board exposing (Board, Piece, MoveResponse(..), startBoard)
-import Operations exposing (countIncomparableValues, combineIncomparableValues, unique)
-import Html exposing (p)
+import Board exposing ( Board, Piece, MoveResponse(..)
+                      , startBoard
+                      )
+import Operations exposing (combineIncomparableValues, unique)
 
 -- MODEL
 

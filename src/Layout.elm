@@ -1,13 +1,18 @@
-module Layout exposing (showBoard, Msg(..))
+module Layout exposing (Msg(..), showBoard)
 
-import Html exposing (Html, b, div, span, text)
-import Html.Attributes exposing (style)
-import Html.Events exposing (onClick)
+import Html exposing   ( Html
+                       , b, div, span, text
+                       )
+import Html.Attributes exposing (  style  )
+import Html.Events     exposing ( onClick )
 
-import Board exposing (Player(..), PieceSize(..))
+import Board exposing  ( Player(..), PieceSize(..) 
+                       )
 import QBoard exposing ( Measurement, QBoard, QPiece
-                       , showPerspective)
-import Game exposing (GameView, BoardViewMode(..))
+                       , showPerspective
+                       )
+import Game exposing   ( GameView, BoardViewMode(..)
+                       )
 
 
 -- MODEL

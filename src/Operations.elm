@@ -1,4 +1,6 @@
-module Operations exposing (countValues, countIncomparableValues, combineIncomparableValues, unique)
+module Operations exposing ( countValues, countIncomparableValues
+                           , combineIncomparableValues, unique
+                           )
 
 import Dict exposing (Dict)
 
