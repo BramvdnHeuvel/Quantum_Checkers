@@ -71,6 +71,7 @@ selectPiece game x y =
             let
                 newBoard : QBoard
                 newBoard = QBoard.moveQPiece game.board p x y
+                            |> QBoard.optimizeQBoard
             in
             ( { game
               | board = newBoard

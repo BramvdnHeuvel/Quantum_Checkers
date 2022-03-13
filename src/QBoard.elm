@@ -1,10 +1,10 @@
 module QBoard exposing ( Measurement, QBoard, QPiece
                        , lookupSpot, moveQPiece, toNormalPiece, resolveCollision
-                       , showPerspective, startQBoard, quantumView, canMove, canMoveTo, makeQuantumMove
+                       , showPerspective, startQBoard, quantumView, canMove, canMoveTo, makeQuantumMove, optimizeQBoard
                        )
 
 import Board exposing (Board, Piece, MoveResponse(..), startBoard)
-import Operations exposing (countIncomparableValues, combineIncomparableValues)
+import Operations exposing (countIncomparableValues, combineIncomparableValues, unique)
 import Html exposing (p)
 
 -- MODEL
@@ -50,10 +50,44 @@ canMoveTo qboard qpiece =
         showPerspective qboard qpiece
             |> qBoardmap (Board.canWalkTo piece)
             |> List.concat
+            |> unique
 
 canQuantum : QBoard -> QPiece -> Bool
 canQuantum qboard qpiece =
     List.length (canMoveTo qboard qpiece) >= 2
+
+reduceWeights : QBoard -> QBoard
+reduceWeights qboard =
+    let
+        primes : List Int
+        primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29]
+
+        divBy : Int -> Boardlet -> Bool
+        divBy p b =
+            modBy p b.weight == 0
+        
+        commonDivisor : QBoard -> Int -> Maybe Int
+        commonDivisor qb p =
+            if List.all (divBy p) qb then
+                Just p
+            else
+                Nothing
+
+        goodPrimeNumbers : List Int
+        goodPrimeNumbers = List.filterMap (commonDivisor qboard) primes
+
+        weightDividedBy : Int -> Boardlet -> Boardlet
+        weightDividedBy p boardlet =
+            { boardlet | weight = boardlet.weight // p }
+    in
+        case goodPrimeNumbers of
+            [] ->
+                qboard
+            
+            head :: _ ->
+                qboard
+                    |> List.map (weightDividedBy head)
+                    |> reduceWeights
 
 filterBoards : (Board -> Bool) -> QBoard -> QBoard
 filterBoards f qboard =
@@ -83,6 +117,7 @@ moveQPiece : QBoard -> QPiece -> Int -> Int -> QBoard
 moveQPiece qboard qpiece x y =
     if qpiece.x == x && qpiece.y == y && canQuantum qboard qpiece then
         makeQuantumMove qboard qpiece
+            |> optimizeQBoard
     else
         let
             p : Piece
@@ -99,6 +134,27 @@ moveQPiece qboard qpiece x y =
                         board
         in
             editBoards updateBoard qboard
+                |> optimizeQBoard
+
+optimizeQBoard : QBoard -> QBoard
+optimizeQBoard qboard =
+    let
+        addState : Boardlet -> QBoard -> QBoard
+        addState boardlet qb =
+            if List.member boardlet.board (List.map .board qb) then
+                List.map (addWeight boardlet) qb
+            else
+                qb ++ [boardlet]
+        
+        addWeight : Boardlet -> Boardlet -> Boardlet
+        addWeight a b =
+            if a.board == b.board then
+                { b | weight = a.weight + b.weight }
+            else
+                b
+    in
+        List.foldr addState [] qboard
+            |> reduceWeights
 
 qBoardmap : (Board -> a) -> QBoard -> List a
 qBoardmap f qboard =
@@ -119,7 +175,7 @@ quantumView : QBoard -> List QPiece
 quantumView qboard =
     let 
         total : Int
-        total = List.length qboard
+        total = List.foldr (\b t -> t + b.weight) 0 qboard 
 
         odds : Int -> Float
         odds v =
@@ -128,9 +184,13 @@ quantumView qboard =
         toQPiece : (Piece, Int) -> QPiece
         toQPiece (piece, count) =
             QPiece piece.owner piece.size piece.x piece.y (odds count)
+        
+        toWeightList : Boardlet -> List (Piece, Int)
+        toWeightList boardlet =
+            List.map (\b -> (b, boardlet.weight)) boardlet.board
     in
         qboard
-            |> qBoardmap countIncomparableValues  -- Optimize this
+            |> List.map toWeightList
             |> List.concat
             |> combineIncomparableValues
             |> List.map toQPiece

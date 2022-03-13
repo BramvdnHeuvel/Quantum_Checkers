@@ -62,11 +62,19 @@ canWalkTo piece board =
                 ]
             
     in
-        List.range 1 boardSize
-            |> List.map getRange
-            |> List.concat
-            |> List.filter withinBounds
-            |> List.filter (\(x, y) -> List.isEmpty (onPath board piece.x piece.y x y))
+        if lookUpSpot board piece.x piece.y == Just piece then
+            List.range 1 boardSize
+                |> List.map getRange
+                |> List.concat
+                |> List.filter withinBounds
+                |> List.filter (\(x, y) -> List.isEmpty (onPath board piece.x piece.y x y))
+        else
+            []
+
+canWalkThere : Board -> Piece -> Int -> Int -> Bool
+canWalkThere board piece x y =
+    canWalkTo piece board
+        |> List.member (x, y)
 
 lookUpSpot : Board -> Int -> Int -> Maybe Piece
 lookUpSpot board x y =
@@ -86,6 +94,8 @@ movePiece board piece x y =
                 p
     in
         if not <| withinBounds (x, y) then
+            InvalidDestination
+        else if not <| canWalkThere board piece x y then
             InvalidDestination
         else 
             List.map selectMovedPiece board
@@ -115,7 +125,7 @@ startPieces rows =
         fillRow color y =
             List.range 1 boardSize
                 |> List.filter (\x -> modBy 2 (x + y) == 0)
-                |> List.map (\x -> Piece color Double x y)
+                |> List.map (\x -> Piece color Single x y)
 
         fillRows : Int -> Int -> Player -> List Piece
         fillRows start end color =

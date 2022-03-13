@@ -1,4 +1,5 @@
-module Operations exposing (countValues, countIncomparableValues, combineIncomparableValues)
+module Operations exposing (countValues, countIncomparableValues, combineIncomparableValues, unique)
+
 import Dict exposing (Dict)
 
 -- This file contains a lot of helper functions.
