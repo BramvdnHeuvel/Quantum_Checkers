@@ -1,11 +1,12 @@
 module Main exposing (main)
 
 import Browser
-import Html exposing (Html, text)
+import Html exposing (Html)
 
-import Game exposing (GameView, defaultGameView)
+import Game exposing (GameView)
 import Layout exposing (Msg(..), showBoard)
 
+main : Program () Model Msg
 main = Browser.element
     { init = init
     , update = update
@@ -39,7 +40,7 @@ update msg model =
 -- SUBSCRIPTIONS
 
 subscriptions : Model -> Sub msg
-subscriptions model =
+subscriptions _ =
     Sub.none
 
 

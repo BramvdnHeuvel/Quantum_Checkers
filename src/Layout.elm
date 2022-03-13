@@ -1,12 +1,13 @@
 module Layout exposing (showBoard, Msg(..))
 
-import Html exposing (Html, div)
+import Html exposing (Html, b, div, span, text)
 import Html.Attributes exposing (style)
 import Html.Events exposing (onClick)
 
 import Board exposing (Player(..), PieceSize(..))
-import QBoard exposing (Measurement, QPiece)
-import Game exposing (GameView)
+import QBoard exposing ( Measurement, QBoard, QPiece
+                       , showPerspective)
+import Game exposing (GameView, BoardViewMode(..))
 
 
 -- MODEL
@@ -34,8 +35,19 @@ showBoard game =
                 ] 
                 content
         
+        board : QBoard
+        board =
+            case game.showMode of
+                Idle ->
+                    game.board
+                FromPerspectiveOf p ->
+                    showPerspective game.board p
+                FinishedGame ->
+                    game.board
+                
+
         pieces : List (Html Msg)
-        pieces = QBoard.quantumView game.board
+        pieces = QBoard.quantumView board
             |> List.map showPiece
     in
         emptySquares ++ pieces -- TODO: Write pieces.
@@ -84,8 +96,8 @@ showPiece piece =
 showSquare : Int -> Int -> String -> Int -> List (Html Msg) -> Html Msg
 showSquare x y color order content =
     div 
-        [ style "grid-row"    (String.fromInt x)
-        , style "grid-column" (String.fromInt y)
+        [ style "grid-row"    (String.fromInt (1 + Board.boardSize - y))
+        , style "grid-column" (String.fromInt x)
         , style "background-color" color
         , style "order"       (String.fromInt order)
         , onClick (SelectPiece x y)
@@ -95,23 +107,45 @@ showSquare x y color order content =
 showCircle : QPiece -> Html msg
 showCircle piece =
     let
-        color : String
-        color =
+        backgroundColor : String
+        backgroundColor =
             case piece.owner of
                 Black -> "Black"
                 White -> "White"
         
+        color : String
+        color =
+            case piece.owner of
+                Black -> "white"
+                White -> "black"
+
+        -- Set the minimal opactiy at 10% to make small pieces
+        -- not TOO invisible.
         odds : String
-        odds = (String.fromFloat piece.odds) ++ "%"
+        odds = (String.fromFloat (max piece.odds 10)) ++ "%"
+
     in
         div
-            [ style "background-color" color
+            [ style "background-color" backgroundColor
             , style "width" "80%"
             , style "height" "80%"
             , style "border-radius" "100%"
             , style "margin" "10%"
             , style "opacity" odds
+            , style "color" color
+            , style "display" "flex"
+            , style "justify-content" "center"
+            , style "align-items" "center"
+            , style "font-size" "200%"
+            , style "user-select" "none"
             ]
-            []
+            [ span 
+                [] 
+                [ b
+                    []
+                    [ text <| String.fromInt (round piece.odds)
+                    ]
+                ]
+            ]
 
 

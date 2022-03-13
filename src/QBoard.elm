@@ -1,9 +1,10 @@
 module QBoard exposing ( Measurement, QBoard, QPiece
                        , lookupSpot, moveQPiece, toNormalPiece, resolveCollision
-                       , startQBoard, quantumView
+                       , showPerspective, startQBoard, quantumView
                        )
 
 import Board exposing (Board, Piece, startBoard)
+import Operations exposing (countIncomparableValues)
 
 -- MODEL
 
@@ -38,31 +39,39 @@ lookupSpot qboard x y =
 
 moveQPiece : QBoard -> QPiece -> Int -> Int -> QBoard
 moveQPiece qboard _ _ _ =
-    qboard
+    qboard -- TODO: Write function for moving piece
 
 quantumView : QBoard -> List QPiece
-quantumView _ = [ -- This is mockup data.
-    { owner = Board.Black
-    , size  = Board.Single
-    , x = 1
-    , y = 1
-    , odds = 100
-    },
-    
-    { owner = Board.White
-    , size  = Board.Single
-    , x = 2
-    , y = 2
-    , odds = 100
-    }]
--- TODO: Write function
--- This function converts the list of boards to
--- a single board with quantum pieces.
+quantumView qboard =
+    let 
+        total : Int
+        total = List.length qboard
+
+        odds : Int -> Float
+        odds v =
+            100 * (toFloat v) / (toFloat total)
+
+        toQPiece : (Piece, Int) -> QPiece
+        toQPiece (piece, count) =
+            QPiece piece.owner piece.size piece.x piece.y (odds count)
+    in
+        qboard
+            |> List.concat
+            |> countIncomparableValues
+            |> List.map toQPiece
 
 resolveCollision : QBoard -> Cmd msg
 resolveCollision _ = Cmd.none -- TODO:
 -- This function asks for a random measurement
 -- when there's a conflict on the board.
+
+showPerspective : QBoard -> QPiece -> QBoard
+showPerspective _ qpiece =
+    let
+        p : Piece
+        p = toNormalPiece qpiece
+    in
+        []
 
 toNormalPiece : QPiece -> Piece
 toNormalPiece qp =

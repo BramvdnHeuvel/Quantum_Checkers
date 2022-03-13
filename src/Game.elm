@@ -1,4 +1,4 @@
-module Game exposing ( GameView
+module Game exposing ( BoardViewMode(..), GameView
                      , defaultGameView, selectPiece, resetGame, measureAt
                      )
 
