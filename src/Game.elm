@@ -1,4 +1,6 @@
-module Game exposing (GameView, defaultGameView, selectPiece, resetGame, measureAt)
+module Game exposing ( GameView
+                     , defaultGameView, selectPiece, resetGame, measureAt
+                     )
 
 import QBoard exposing (Measurement, QBoard, QPiece, startQBoard)
 import Board  exposing (Player(..))
@@ -65,6 +67,7 @@ selectPiece game x y =
             in
             ( { game
               | board = newBoard
+              , showMode = Idle
               }
             , QBoard.resolveCollision newBoard
             )

@@ -1,7 +1,9 @@
-module QBoard exposing (QBoard, QPiece, lookupSpot, moveQPiece, toNormalPiece, resolveCollision, startQBoard, Measurement, quantumView)
+module QBoard exposing ( Measurement, QBoard, QPiece
+                       , lookupSpot, moveQPiece, toNormalPiece, resolveCollision
+                       , startQBoard, quantumView
+                       )
 
-import Board exposing (Board, startBoard)
-import Board exposing (Piece)
+import Board exposing (Board, Piece, startBoard)
 
 -- MODEL
 
