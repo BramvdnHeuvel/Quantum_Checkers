@@ -1,7 +1,7 @@
 module QBoard exposing ( Measurement, QBoard, QPiece
                        , lookupSpot, moveQPiece, toNormalPiece, resolveCollision
                        , showPerspective, startQBoard, quantumView, canMove
-                       , canMoveTo, makeQuantumMove, optimizeQBoard
+                       , canMoveTo, makeQuantumMove, optimizeQBoard, canQuantum
                        )
 
 import Board exposing ( Board, Piece, MoveResponse(..)
@@ -10,6 +10,11 @@ import Board exposing ( Board, Piece, MoveResponse(..)
 import Operations exposing (combineIncomparableValues, unique)
 
 -- MODEL
+
+maxQuantumBoards : Int
+maxQuantumBoards = 256
+-- Maximum amount of boards
+-- This is to prevent the game from becoming too slow.
 
 type alias QBoard = List Boardlet
 
@@ -29,6 +34,11 @@ type Measurement
     = Black
     | White
     | Empty
+
+type QuantumMoveResponse
+    = SwitchTurn QBoard
+    | RepeatTurn QBoard QPiece
+    | InvalidMove
 
 startQBoard : QBoard
 startQBoard = [ { board = startBoard
@@ -56,7 +66,10 @@ canMoveTo qboard qpiece =
 
 canQuantum : QBoard -> QPiece -> Bool
 canQuantum qboard qpiece =
-    List.length (canMoveTo qboard qpiece) >= 2
+    if List.length (canMoveTo qboard qpiece) >= 2 then
+        List.length (makeQuantumMove qboard qpiece) <= maxQuantumBoards
+    else
+        False
 
 reduceWeights : QBoard -> QBoard
 reduceWeights qboard =

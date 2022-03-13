@@ -9,7 +9,7 @@ import Html.Events     exposing ( onClick )
 import Board exposing  ( Player(..), PieceSize(..) 
                        )
 import QBoard exposing ( Measurement, QBoard, QPiece
-                       , showPerspective
+                       , showPerspective, canQuantum
                        )
 import Game exposing   ( GameView, BoardViewMode(..)
                        )
@@ -62,8 +62,19 @@ showBoard game =
                         |> List.map (showOptionButton "green")
                 _ ->
                     []
+        
+        quantumMove : List (Html Msg)
+        quantumMove =
+            case game.showMode of
+                FromPerspectiveOf p ->
+                    if canQuantum game.board p then
+                        [showOptionButton "blue" (p.x, p.y)]
+                    else
+                        []
+                _ ->
+                    []
     in
-        emptySquares ++ pieces ++ optionalMoves -- TODO: Write pieces.
+        emptySquares ++ pieces ++ optionalMoves ++ quantumMove
             |> boardWrapper
 
 -- UPDATE
