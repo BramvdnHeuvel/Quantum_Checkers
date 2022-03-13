@@ -65,6 +65,9 @@ selectPiece game x y =
             -- TODO: Execute the proposed turn.
             -- TODO: If the player may make an extra turn, already select
             --          that piece to make it clearer to the player.
+            -- TODO: If the player selects another piece,
+            --          switch to that piece's perspective. (The player may
+            --          just wander between multiple pieces.)
             let
                 newBoard : QBoard
                 newBoard = QBoard.moveQPiece game.board p x y

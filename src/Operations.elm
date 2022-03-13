@@ -1,6 +1,7 @@
-module Operations exposing (countValues, countIncomparableValues)
+module Operations exposing (countValues, countIncomparableValues, combineIncomparableValues)
 import Dict exposing (Dict)
 import Html exposing (a)
+import Html exposing (b)
 
 -- This file contains a lot of helper functions.
 
@@ -50,36 +51,34 @@ trackValues la d =
 -- works on records.
 countIncomparableValues : List a -> List (a, Int)
 countIncomparableValues la =
-    trackIncomparableValues la [] []
-
-trackIncomparableValues : List a -> List a -> List Int -> List (a, Int)
-trackIncomparableValues la seenSoFar counts =
-    case la of
-        [] ->
-            List.map2 (\s c -> (s, c)) seenSoFar counts
-        
-        head :: tail ->
-            if List.member head seenSoFar then
-                trackIncomparableValues tail seenSoFar counts
+    let
+        addValue : a -> List (a, Int) -> List (a, Int)
+        addValue x lx =
+            if List.member x (List.map (\(v, _) -> v) lx) then
+                List.map (updateValue x) lx
             else
-                let
-                    occurrences : Int
-                    occurrences = countIncomparableValue head la
-                in
-                    trackIncomparableValues
-                        tail
-                        (seenSoFar ++ [head])
-                        (counts ++ [occurrences])
+                lx ++ [(x, 1)]
 
--- NOTICE: Without an s
-countIncomparableValue : a -> List a -> Int
-countIncomparableValue a la =
-    case la of
-        [] ->
-            0
-        
-        head :: tail ->
-            if head == a then
-                countIncomparableValue a tail + 1
+        updateValue : a -> (a, Int) -> (a, Int)
+        updateValue v (x, i) =
+            if x == v then
+                (x, i+1)
             else
-                countIncomparableValue a tail
+                (x, i)
+    in
+        List.foldr addValue [] la
+
+combineIncomparableValues : List (a, Int) -> List (a, Int)
+combineIncomparableValues la =
+    let
+        count : a -> Int
+        count item =
+            la
+                |> List.filter (\(t, _) -> t == item)
+                |> List.map    (\(_, i) -> i)
+                |> List.sum
+    in
+        la
+            |> List.map (\(t, _) -> t)
+            |> unique
+            |> List.map (\t -> (t, count t))

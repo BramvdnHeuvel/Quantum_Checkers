@@ -45,12 +45,20 @@ showBoard game =
                 FinishedGame ->
                     game.board
                 
-
         pieces : List (Html Msg)
         pieces = QBoard.quantumView board
             |> List.map showPiece
+        
+        optionalMoves : List (Html Msg)
+        optionalMoves =
+            case game.showMode of
+                FromPerspectiveOf p ->
+                    QBoard.canMoveTo board p
+                        |> List.map (showOptionButton "green")
+                _ ->
+                    []
     in
-        emptySquares ++ pieces -- TODO: Write pieces.
+        emptySquares ++ pieces ++ optionalMoves -- TODO: Write pieces.
             |> boardWrapper
 
 -- UPDATE
@@ -92,6 +100,18 @@ emptySquares =
 showPiece : QPiece -> Html Msg
 showPiece piece =
     showSquare piece.x piece.y validFieldColor 1 [showCircle piece]
+
+showOptionButton : String -> (Int, Int) -> Html Msg
+showOptionButton color (x, y) =
+    div 
+        [ style "grid-row"    (String.fromInt (1 + Board.boardSize - y))
+        , style "grid-column" (String.fromInt x)
+        , style "background-color" color
+        , style "order"       "2"
+        , onClick (SelectPiece x y)
+        , style "opacity"     "50%"
+        ]
+        []
 
 showSquare : Int -> Int -> String -> Int -> List (Html Msg) -> Html Msg
 showSquare x y color order content =

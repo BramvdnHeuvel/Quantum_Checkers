@@ -1,10 +1,11 @@
 module QBoard exposing ( Measurement, QBoard, QPiece
                        , lookupSpot, moveQPiece, toNormalPiece, resolveCollision
-                       , showPerspective, startQBoard, quantumView, canMove
+                       , showPerspective, startQBoard, quantumView, canMove, canMoveTo, makeQuantumMove
                        )
 
-import Board exposing (Board, Piece, startBoard)
-import Operations exposing (countIncomparableValues)
+import Board exposing (Board, Piece, MoveResponse(..), startBoard)
+import Operations exposing (countIncomparableValues, combineIncomparableValues)
+import Html exposing (p)
 
 -- MODEL
 
@@ -24,13 +25,28 @@ type Measurement
     | Empty
 
 startQBoard : QBoard
-startQBoard = [startBoard, []]
+startQBoard = [startBoard]
 
 -- UPDATE
 
 canMove : QBoard -> QPiece -> Bool
-canMove _ _ =
-    True -- TODO: Determine whether the piece may move.
+canMove qboard qpiece =
+    canMoveTo qboard qpiece
+        |> List.isEmpty
+        |> not
+
+canMoveTo : QBoard -> QPiece -> List (Int, Int)
+canMoveTo qboard qpiece =
+    let
+        piece = toNormalPiece qpiece
+    in
+        showPerspective qboard qpiece
+            |> List.map (Board.canWalkTo piece)
+            |> List.concat
+
+canQuantum : QBoard -> QPiece -> Bool
+canQuantum qboard qpiece =
+    List.length (canMoveTo qboard qpiece) >= 2
 
 lookupSpot : QBoard -> Int -> Int -> Maybe QPiece
 lookupSpot qboard x y =
@@ -42,9 +58,33 @@ lookupSpot qboard x y =
     in
         List.head pieces
 
+makeQuantumMove : QBoard -> QPiece -> QBoard
+makeQuantumMove qboard qpiece =
+    canMoveTo qboard qpiece
+        |> List.map (\(x, y) -> moveQPiece qboard qpiece x y)
+        |> List.concat
+
 moveQPiece : QBoard -> QPiece -> Int -> Int -> QBoard
-moveQPiece qboard _ _ _ =
-    qboard -- TODO: Write function for moving piece
+moveQPiece qboard qpiece x y =
+    if qpiece.x == x && qpiece.y == y && canQuantum qboard qpiece then
+        makeQuantumMove qboard qpiece
+    else
+        let
+            p : Piece
+            p = toNormalPiece qpiece
+
+            updateBoard : Board -> Board
+            updateBoard board =
+                case Board.movePiece board p x y of
+                    SuccessSameTurn b _ ->
+                        b
+                    SuccessNewTurn b ->
+                        b
+                    InvalidDestination ->
+                        board
+        in
+            List.map updateBoard qboard
+                
 
 quantumView : QBoard -> List QPiece
 quantumView qboard =
@@ -61,8 +101,9 @@ quantumView qboard =
             QPiece piece.owner piece.size piece.x piece.y (odds count)
     in
         qboard
+            |> List.map countIncomparableValues  -- Optimize this
             |> List.concat
-            |> countIncomparableValues
+            |> combineIncomparableValues
             |> List.map toQPiece
 
 resolveCollision : QBoard -> Cmd msg
