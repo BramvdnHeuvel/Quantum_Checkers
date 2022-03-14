@@ -154,6 +154,13 @@ showCircle piece =
             case piece.owner of
                 Black -> "white"
                 White -> "black"
+        
+        shadow : List (Html.Attribute msg)
+        shadow =
+            if piece.size == Double then
+                [style "box-shadow" ("3px 3px " ++ color)]
+            else
+                []
 
         -- Set the minimal opactiy at 10% to make small pieces
         -- not TOO invisible.
@@ -162,6 +169,7 @@ showCircle piece =
 
     in
         div
+            (
             [ style "background-color" backgroundColor
             , style "width" "80%"
             , style "height" "80%"
@@ -174,7 +182,8 @@ showCircle piece =
             , style "align-items" "center"
             , style "font-size" "200%"
             , style "user-select" "none"
-            ]
+            ] ++ shadow
+            )
             [ span 
                 [] 
                 [ b
