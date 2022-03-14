@@ -34,9 +34,11 @@ startBoard = startPieces 4 -- ++ [Piece White Double 7 3]
 
 -- UPDATE
 
-hasCaptureAvailable : Board -> Bool
-hasCaptureAvailable board =
-    List.any (canCapture board) board
+hasCaptureAvailable : Board -> Player -> Bool
+hasCaptureAvailable board player =
+    board
+        |> List.filter (\p -> p.owner == player)
+        |> List.any (canCapture board)
 
 canCapture : Board -> Piece -> Bool
 canCapture board piece =
@@ -67,13 +69,16 @@ canCaptureTo piece board =
                 middlePieces : List Piece
                 middlePieces = onPath board piece.x piece.y x y
             in
-                if List.length middlePieces == 1 then
-                    if lookUpSpot board x y == Nothing then
-                        case middlePieces of
-                            [] ->
-                                False
-                            head :: tail ->
-                                head.owner /= piece.owner
+                if abs (piece.x - x) == abs (piece.y - y) then
+                    if List.length middlePieces == 1 then
+                        if lookUpSpot board x y == Nothing then
+                            case middlePieces of
+                                [] ->
+                                    False
+                                head :: _ ->
+                                    head.owner /= piece.owner
+                        else
+                            False
                     else
                         False
                 else
@@ -139,8 +144,8 @@ lookUpSpot board x y =
         |> List.filter (\p -> p.y == y)
         |> List.head
 
-movePiece : Board -> Piece -> Int -> Int -> MoveResponse
-movePiece board piece x y =
+movePiece : Board -> Player -> Piece -> Int -> Int -> MoveResponse
+movePiece board player piece x y =
     let
         selectMovedPiece : Piece -> Piece
         selectMovedPiece p =
@@ -149,14 +154,38 @@ movePiece board piece x y =
             else
                 p
     in
-        if hasCaptureAvailable board then
-            -- A capture is possible
+        if not <| withinBounds (x, y) then
             InvalidDestination
+        else if player /= piece.owner then
+            InvalidDestination
+        else if hasCaptureAvailable board player then
+            -- A capture is possible
+            if lookUpSpot board piece.x piece.y == Just piece then
+                if canCaptureThere board piece x y then
+                    let
+                        piecesToRemove : List Piece
+                        piecesToRemove = onPath board piece.x piece.y x y
+                        
+                        boardWithCapture : Board
+                        boardWithCapture = 
+                            List.map selectMovedPiece board
+                                |> List.filter (\p -> not <| List.member p piecesToRemove)
+                        
+                        newPiece : Piece
+                        newPiece = { piece | x = x, y = y }
+                    in
+                        if canCapture boardWithCapture newPiece then
+                            SuccessSameTurn boardWithCapture newPiece
+                        else
+                            SuccessNewTurn boardWithCapture
+
+                else
+                    InvalidDestination
+            else
+                InvalidDestination
         else
             -- Nothing to capture
-            if not <| withinBounds (x, y) then
-                InvalidDestination
-            else if not <| canWalkThere board piece x y then
+            if not <| canWalkThere board piece x y then
                 InvalidDestination
             else 
                 List.map selectMovedPiece board
@@ -194,7 +223,7 @@ startPieces rows =
                 |> List.map (fillRow color)
                 |> List.concat
     in
-        [fillRows 1 rows White, fillRows (1 + boardSize - rows) boardSize Black]
+        [fillRows 1 rows White, fillRows (1 + boardSize - rows) (boardSize-3) Black]
             |> List.concat
 
 withinBounds : (Int, Int) -> Bool

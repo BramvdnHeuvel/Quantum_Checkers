@@ -54,7 +54,7 @@ selectPiece game x y =
                     Just p ->
                         if p.owner /= game.turn then
                             (game, Cmd.none)
-                        else if not (QBoard.canMove game.board p) then
+                        else if not (QBoard.canMove game.board game.turn p) then
                             (game, Cmd.none)
                         else
                             ( { game | showMode = FromPerspectiveOf p}
@@ -72,7 +72,7 @@ selectPiece game x y =
             --          just wander between multiple pieces.)
             let
                 newBoard : QBoard
-                newBoard = QBoard.moveQPiece game.board p x y
+                newBoard = QBoard.moveQPiece game.board game.turn p x y
                             |> QBoard.optimizeQBoard
             in
             ( { game

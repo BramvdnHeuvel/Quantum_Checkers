@@ -58,7 +58,7 @@ showBoard game =
         optionalMoves =
             case game.showMode of
                 FromPerspectiveOf p ->
-                    QBoard.canMoveTo board p
+                    QBoard.canMoveTo board game.turn p
                         |> List.map (showOptionButton "green")
                 _ ->
                     []
@@ -67,7 +67,7 @@ showBoard game =
         quantumMove =
             case game.showMode of
                 FromPerspectiveOf p ->
-                    if canQuantum game.board p then
+                    if canQuantum game.board game.turn p then
                         [showOptionButton "blue" (p.x, p.y)]
                     else
                         []

@@ -4,7 +4,7 @@ module QBoard exposing ( Measurement, QBoard, QPiece
                        , canMoveTo, makeQuantumMove, optimizeQBoard, canQuantum
                        )
 
-import Board exposing ( Board, Piece, MoveResponse(..)
+import Board exposing ( Board, Piece, Player, MoveResponse(..)
                       , startBoard
                       )
 import Operations exposing (combineIncomparableValues, unique)
@@ -48,23 +48,23 @@ startQBoard = [ { board = startBoard
 
 -- UPDATE
 
-hasCaptureAvailable : QBoard -> Bool
-hasCaptureAvailable qboard =
-    qBoardmap Board.hasCaptureAvailable qboard
+hasCaptureAvailable : QBoard -> Player -> Bool
+hasCaptureAvailable qboard player =
+    qBoardmap (\b -> Board.hasCaptureAvailable b player) qboard
         |> List.any (\x -> x)
 
-canMove : QBoard -> QPiece -> Bool
-canMove qboard qpiece =
-    canMoveTo qboard qpiece
+canMove : QBoard -> Player -> QPiece -> Bool
+canMove qboard player qpiece =
+    canMoveTo qboard player qpiece
         |> List.isEmpty
         |> not
 
-canMoveTo : QBoard -> QPiece -> List (Int, Int)
-canMoveTo qboard qpiece =
+canMoveTo : QBoard -> Player -> QPiece -> List (Int, Int)
+canMoveTo qboard player qpiece =
     let
         piece = toNormalPiece qpiece
     in
-        if hasCaptureAvailable qboard then
+        if hasCaptureAvailable qboard player then
             showPerspective qboard qpiece
                 |> qBoardmap (Board.canCaptureTo piece)
                 |> List.concat
@@ -75,9 +75,9 @@ canMoveTo qboard qpiece =
                 |> List.concat
                 |> unique
 
-canQuantum : QBoard -> QPiece -> Bool
-canQuantum qboard qpiece =
-    if hasCaptureAvailable qboard then
+canQuantum : QBoard -> Player -> QPiece -> Bool
+canQuantum qboard player qpiece =
+    if hasCaptureAvailable qboard player then
         False
     else
         List.map .board qboard
@@ -134,16 +134,16 @@ lookupSpot qboard x y =
     in
         List.head pieces
 
-makeQuantumMove : QBoard -> QPiece -> QBoard
-makeQuantumMove qboard qpiece =
-    canMoveTo qboard qpiece
-        |> List.map (\(x, y) -> moveQPiece qboard qpiece x y)
+makeQuantumMove : QBoard -> Player -> QPiece -> QBoard
+makeQuantumMove qboard player qpiece =
+    canMoveTo qboard player qpiece
+        |> List.map (\(x, y) -> moveQPiece qboard player qpiece x y)
         |> List.concat
 
-moveQPiece : QBoard -> QPiece -> Int -> Int -> QBoard
-moveQPiece qboard qpiece x y =
-    if qpiece.x == x && qpiece.y == y && canQuantum qboard qpiece then
-        makeQuantumMove qboard qpiece
+moveQPiece : QBoard -> Player -> QPiece -> Int -> Int -> QBoard
+moveQPiece qboard player qpiece x y =
+    if qpiece.x == x && qpiece.y == y && canQuantum qboard player qpiece then
+        makeQuantumMove qboard player qpiece
             |> optimizeQBoard
     else
         let
@@ -152,7 +152,7 @@ moveQPiece qboard qpiece x y =
 
             updateBoard : Board -> Board
             updateBoard board =
-                case Board.movePiece board p x y of
+                case Board.movePiece board player p x y of
                     SuccessSameTurn b _ ->
                         b
                     SuccessNewTurn b ->
