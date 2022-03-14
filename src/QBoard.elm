@@ -1,7 +1,8 @@
-module QBoard exposing ( QBoard, QPiece
+module QBoard exposing ( QBoard, QPiece, QuantumMoveResponse(..)
                        , lookupSpot, moveQPiece, toNormalPiece, resolveCollision
                        , showPerspective, startQBoard, quantumView, canMove
-                       , canMoveTo, makeQuantumMove, optimizeQBoard, canQuantum, emptyAtSpot, showPerspectiveOfPiece
+                       , canMoveTo, makeQuantumMove, optimizeQBoard, canQuantum
+                       , emptyAtSpot, showPerspectiveOfPiece
                        )
 
 import Random
@@ -143,15 +144,30 @@ lookupSpot qboard x y =
 
 makeQuantumMove : QBoard -> Player -> QPiece -> QBoard
 makeQuantumMove qboard player qpiece =
-    canMoveTo qboard player qpiece
-        |> List.map (\(x, y) -> moveQPiece qboard player qpiece x y)
-        |> List.concat
+    let        
+        processResponse : QuantumMoveResponse -> QBoard
+        processResponse response =
+            case response of
+                InvalidMove ->
+                    qboard
+                
+                RepeatTurn newqb _ ->
+                    newqb
+                
+                SwitchTurn newqb ->
+                    newqb
+    in
+        canMoveTo qboard player qpiece
+            |> List.map (\(x, y) -> moveQPiece qboard player qpiece x y)
+            |> List.map processResponse
+            |> List.concat
 
-moveQPiece : QBoard -> Player -> QPiece -> Int -> Int -> QBoard
+moveQPiece : QBoard -> Player -> QPiece -> Int -> Int -> QuantumMoveResponse
 moveQPiece qboard player qpiece x y =
     if qpiece.x == x && qpiece.y == y && canQuantum qboard player qpiece then
         makeQuantumMove qboard player qpiece
             |> optimizeQBoard
+            |> SwitchTurn
     else
         let
             p : Piece
@@ -166,9 +182,43 @@ moveQPiece qboard player qpiece x y =
                         b
                     InvalidDestination ->
                         board
+            
+            hasSameTurn : Board -> Maybe Piece
+            hasSameTurn board =
+                case Board.movePiece board player p x y of
+                    SuccessSameTurn _ newp ->
+                        Just newp
+                    _ ->
+                        Nothing
+            
+            hasNewTurn : Board -> Bool
+            hasNewTurn board =
+                case Board.movePiece board player p x y of
+                    SuccessNewTurn _ ->
+                        True
+                    _ ->
+                        False
+            
+            chooseMessage : QBoard -> QBoard -> QuantumMoveResponse
+            chooseMessage oldqb newqb =
+                let
+                    boards : List Board
+                    boards = List.map .board oldqb
+                in
+                    case List.filterMap hasSameTurn boards of
+                        [] ->
+                            if List.any hasNewTurn boards then
+                                SwitchTurn newqb
+                            else
+                                InvalidMove
+                        
+                        head :: _ ->
+                            RepeatTurn newqb (toQPiece newqb head)
+
         in
             editBoards updateBoard qboard
                 |> optimizeQBoard
+                |> chooseMessage qboard
 
 optimizeQBoard : QBoard -> QBoard
 optimizeQBoard qboard =
@@ -215,8 +265,8 @@ quantumView qboard =
         odds v =
             100 * (toFloat v) / (toFloat total)
 
-        toQPiece : (Piece, Int) -> QPiece
-        toQPiece (piece, count) =
+        convToQPiece : (Piece, Int) -> QPiece
+        convToQPiece (piece, count) =
             QPiece piece.owner piece.size piece.x piece.y (odds count)
         
         toWeightList : Boardlet -> List (Piece, Int)
@@ -227,7 +277,7 @@ quantumView qboard =
             |> List.map toWeightList
             |> List.concat
             |> combineIncomparableValues
-            |> List.map toQPiece
+            |> List.map convToQPiece
 
 spotCollision : QBoard -> List (Float, Measurement)
 spotCollision qboard =
@@ -296,6 +346,16 @@ showPerspective qboard qpiece =
         p = toNormalPiece qpiece
     in
         showPerspectiveOfPiece qboard p
+
+toQPiece : QBoard -> Piece -> QPiece
+toQPiece qboard piece =
+    quantumView qboard
+        |> List.filter (\p -> piece.x     == p.x    )
+        |> List.filter (\p -> piece.y     == p.y    )
+        |> List.filter (\p -> piece.owner == p.owner)
+        |> List.filter (\p -> piece.size  == p.size )
+        |> List.head
+        |> Maybe.withDefault (QPiece Board.Black Board.Single 0 0 0)
 
 toNormalPiece : QPiece -> Piece
 toNormalPiece qp =

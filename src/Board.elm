@@ -1,7 +1,7 @@
 module Board exposing (Board, Piece, Player(..), PieceSize(..), MoveResponse(..)
                       , boardSize, startBoard, canWalkTo, movePiece, canQuantum
                       , canCaptureTo, canCaptureThere, hasCaptureAvailable
-                      , lookUpSpot
+                      , lookUpSpot, nextTurn
                       )
 
 -- MODEL
@@ -35,6 +35,12 @@ startBoard : Board
 startBoard = startPieces 4 -- ++ [Piece White Double 7 3]
 
 -- UPDATE
+
+nextTurn : Player -> Player
+nextTurn player =
+    case player of
+        Black -> White
+        White -> Black
 
 hasCaptureAvailable : Board -> Player -> Bool
 hasCaptureAvailable board player =
@@ -228,7 +234,7 @@ startPieces rows =
                 |> List.map (fillRow color)
                 |> List.concat
     in
-        [fillRows 1 rows White, fillRows (1 + boardSize - rows) (boardSize-3) Black]
+        [fillRows 1 rows White, fillRows (1 + boardSize - rows) boardSize Black]
             |> List.concat
 
 withinBounds : (Int, Int) -> Bool

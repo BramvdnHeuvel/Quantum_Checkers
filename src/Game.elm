@@ -2,7 +2,7 @@ module Game exposing ( BoardViewMode(..), GameView
                      , defaultGameView, selectPiece, resetGame, measureAt
                      )
 
-import QBoard exposing ( QBoard, QPiece
+import QBoard exposing ( QBoard, QPiece, QuantumMoveResponse(..)
                        , startQBoard
                        )
 import Board  exposing (Player(..))
@@ -11,9 +11,10 @@ import Message exposing (Msg, Measurement)
 -- MODEL
 
 type alias GameView =
-    { turn     : Player
-    , showMode : BoardViewMode
-    , board    : QBoard
+    { turn      : Player
+    , showMode  : BoardViewMode
+    , board     : QBoard
+    , onlyPiece : Maybe QPiece
     }
 
 type BoardViewMode
@@ -23,9 +24,10 @@ type BoardViewMode
 
 defaultGameView : GameView
 defaultGameView =
-    { turn     = White
-    , showMode = Idle
-    , board    = startQBoard
+    { turn      = White
+    , showMode  = Idle
+    , board     = startQBoard
+    , onlyPiece = Nothing
     }
 
 -- UPDATE
@@ -78,23 +80,36 @@ selectPiece game x y =
         -- The player clicked away to deactivate the option,
         -- or they clicked on a field to make a move.
         FromPerspectiveOf p ->
-            -- TODO: Execute the proposed turn.
-            -- TODO: If the player may make an extra turn, already select
-            --          that piece to make it clearer to the player.
-            -- TODO: If the player selects another piece,
-            --          switch to that piece's perspective. (The player may
-            --          just wander between multiple pieces.)
-            let
-                newBoard : QBoard
-                newBoard = QBoard.moveQPiece game.board game.turn p x y
-                            |> QBoard.optimizeQBoard
-            in
-            ( { game
-              | board = newBoard
-              , showMode = Idle
-              }
-            , QBoard.resolveCollision newBoard
-            )
+            case QBoard.moveQPiece game.board game.turn p x y of
+                InvalidMove ->
+                    if game.onlyPiece == Nothing then
+                        -- If the player selects another piece,
+                        -- view from that piece's perspective.
+                        selectPiece { game | showMode = Idle } x y
+                    else
+                        ( game
+                        , Cmd.none
+                        )
+                
+                SwitchTurn newBoard ->
+                    ( { game
+                      | turn      = Board.nextTurn game.turn
+                      , board     = newBoard
+                      , showMode  = Idle
+                      , onlyPiece = Nothing
+                      }
+                    , QBoard.resolveCollision newBoard
+                    )
+                
+                RepeatTurn newBoard capturePiece ->
+                    ( { game
+                      | board     = newBoard
+                      , showMode  = FromPerspectiveOf capturePiece
+                      , onlyPiece = Just capturePiece
+                      }
+                    , QBoard.resolveCollision newBoard
+                    )
+            
         
         -- If the game's finished,
         -- ignore all board interaction
