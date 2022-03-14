@@ -1,4 +1,4 @@
-module Layout exposing (Msg(..), showBoard)
+module Layout exposing (showBoard)
 
 import Html exposing   ( Html
                        , b, div, span, text
@@ -6,13 +6,15 @@ import Html exposing   ( Html
 import Html.Attributes exposing (  style  )
 import Html.Events     exposing ( onClick )
 
-import Board exposing  ( Player(..), PieceSize(..) 
-                       )
-import QBoard exposing ( Measurement, QBoard, QPiece
-                       , showPerspective, canQuantum
-                       )
-import Game exposing   ( GameView, BoardViewMode(..)
-                       )
+import Board   exposing ( Player(..), PieceSize(..) 
+                        )
+import QBoard  exposing ( QBoard, QPiece
+                        , showPerspective, canQuantum
+                        )
+import Game    exposing ( GameView, BoardViewMode(..)
+                        )
+import Message exposing (Msg(..), Measurement
+                        )
 
 
 -- MODEL
@@ -22,11 +24,6 @@ validFieldColor = "darkgray"
 
 nonValidFieldColor : String
 nonValidFieldColor = "black"
-
-type Msg
-    = SelectPiece Int Int
-    | ResetGame
-    | Measure Int Int Measurement
 
 showBoard : GameView -> Html Msg
 showBoard game =

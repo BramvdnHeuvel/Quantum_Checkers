@@ -2,10 +2,11 @@ module Game exposing ( BoardViewMode(..), GameView
                      , defaultGameView, selectPiece, resetGame, measureAt
                      )
 
-import QBoard exposing ( Measurement, QBoard, QPiece
+import QBoard exposing ( QBoard, QPiece
                        , startQBoard
                        )
 import Board  exposing (Player(..))
+import Message exposing (Msg, Measurement)
 
 -- MODEL
 
@@ -29,14 +30,27 @@ defaultGameView =
 
 -- UPDATE
 
-measureAt : GameView -> Int -> Int -> Measurement -> (GameView, Cmd msg)
-measureAt game _ _ _ =
-    (game, Cmd.none) -- TODO: Execute a measurement on the board.
+measureAt : GameView -> Measurement -> (GameView, Cmd msg)
+measureAt game measure =
+    case measure.piece of
+        Nothing ->
+            ( { game
+              | board = QBoard.emptyAtSpot game.board measure.x measure.y
+              }
+            , Cmd.none
+            )
+        
+        Just p ->
+            ( { game
+              | board = QBoard.showPerspectiveOfPiece game.board p
+              }
+            , Cmd.none
+            )
 
 resetGame : (GameView, Cmd msg)
 resetGame = (defaultGameView, Cmd.none)
 
-selectPiece : GameView -> Int -> Int -> (GameView, Cmd msg)
+selectPiece : GameView -> Int -> Int -> (GameView, Cmd Msg)
 selectPiece game x y =
     case game.showMode of
         

@@ -1,5 +1,7 @@
 module Board exposing (Board, Piece, Player(..), PieceSize(..), MoveResponse(..)
-                      , boardSize, startBoard, canWalkTo, movePiece, canQuantum, canCaptureTo, canCaptureThere, hasCaptureAvailable
+                      , boardSize, startBoard, canWalkTo, movePiece, canQuantum
+                      , canCaptureTo, canCaptureThere, hasCaptureAvailable
+                      , lookUpSpot
                       )
 
 -- MODEL
@@ -207,6 +209,9 @@ onPath board x1 y1 x2 y2 =
     in
         List.filterMap (\(x, y) -> lookUpSpot board x y) spots
 
+removePiece : Piece -> Board -> Board
+removePiece piece board =
+    List.filter (\p -> p /= piece) board
 
 startPieces : Int -> List Piece
 startPieces rows =

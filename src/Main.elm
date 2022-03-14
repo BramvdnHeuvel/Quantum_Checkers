@@ -4,7 +4,8 @@ import Browser
 import Html exposing (Html, div, p, text)
 
 import Game exposing (GameView)
-import Layout exposing (Msg(..), showBoard)
+import Layout exposing (showBoard)
+import Message exposing (Msg(..))
 
 main : Program () Model Msg
 main = Browser.element
@@ -24,7 +25,7 @@ init _ = Game.resetGame
 
 -- UPDATE
 
-update : Msg -> Model -> (Model, Cmd msg)
+update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case (msg) of
         SelectPiece x y ->
@@ -33,8 +34,13 @@ update msg model =
         ResetGame ->
             Game.resetGame
         
-        Measure x y m ->
-            Game.measureAt model x y m
+        Measure m ->
+            Game.measureAt model m
+
+        FailedMeasure _ ->
+            ( model
+            , Cmd.none
+            )
 
 
 -- SUBSCRIPTIONS

@@ -1,13 +1,16 @@
-module QBoard exposing ( Measurement, QBoard, QPiece
+module QBoard exposing ( QBoard, QPiece
                        , lookupSpot, moveQPiece, toNormalPiece, resolveCollision
                        , showPerspective, startQBoard, quantumView, canMove
-                       , canMoveTo, makeQuantumMove, optimizeQBoard, canQuantum
+                       , canMoveTo, makeQuantumMove, optimizeQBoard, canQuantum, emptyAtSpot, showPerspectiveOfPiece
                        )
+
+import Random
 
 import Board exposing ( Board, Piece, Player, MoveResponse(..)
                       , startBoard
                       )
 import Operations exposing (combineIncomparableValues, unique)
+import Message exposing (Msg(..), Measurement)
 
 -- MODEL
 
@@ -29,11 +32,6 @@ type alias QPiece =
     , y     : Int
     , odds  : Float
     }
-
-type Measurement
-    = Black
-    | White
-    | Empty
 
 type QuantumMoveResponse
     = SwitchTurn QBoard
@@ -115,6 +113,15 @@ reduceWeights qboard =
                 qboard
                     |> List.map (weightDividedBy head)
                     |> reduceWeights
+
+emptyAtSpot : QBoard -> Int -> Int -> QBoard
+emptyAtSpot qboard x y =
+    let
+        hasEmptySquare : Boardlet -> Bool
+        hasEmptySquare bl =
+            Board.lookUpSpot bl.board x y == Nothing
+    in
+        List.filter hasEmptySquare qboard
 
 filterBoards : (Board -> Bool) -> QBoard -> QBoard
 filterBoards f qboard =
@@ -222,10 +229,65 @@ quantumView qboard =
             |> combineIncomparableValues
             |> List.map toQPiece
 
-resolveCollision : QBoard -> Cmd msg
-resolveCollision _ = Cmd.none -- TODO:
--- This function asks for a random measurement
--- when there's a conflict on the board.
+spotCollision : QBoard -> List (Float, Measurement)
+spotCollision qboard =
+    let
+        coords : List (Int, Int)
+        coords =
+            quantumView qboard
+                |> List.map (\p -> (p.x, p.y))
+
+        findMatch : List (Int, Int) -> Maybe (Int, Int)
+        findMatch la =
+            case la of
+                [] ->
+                    Nothing
+                
+                head :: body ->
+                    case body of
+                        [] ->
+                            Nothing
+                        
+                        belly :: tail ->
+                            if head == belly then
+                                Just head
+                            else
+                                findMatch body
+    in
+        case findMatch (List.sort coords) of
+            Nothing ->
+                []
+        
+            Just (x, y) ->
+                List.map
+                    (\b -> (toFloat b.weight, Measurement x y (Board.lookUpSpot b.board x y))) 
+                    qboard
+
+createRandomMeasurement : List (Float, Measurement) -> Random.Generator Measurement
+createRandomMeasurement la =
+    case la of
+        [] ->
+            -- Should not happen
+            Random.constant (Measurement 0 0 Nothing)
+
+        head :: tail ->
+            Random.weighted head tail
+
+
+resolveCollision : QBoard -> Cmd Msg
+resolveCollision qboard =
+    let
+        c : List (Float, Measurement)
+        c = spotCollision qboard
+    in
+        if List.length c == 0 then
+            Cmd.none
+        else
+            Random.generate Measure (createRandomMeasurement c)
+
+showPerspectiveOfPiece : QBoard -> Piece -> QBoard
+showPerspectiveOfPiece qboard piece =
+    filterBoards (List.member piece) qboard
 
 showPerspective : QBoard -> QPiece -> QBoard
 showPerspective qboard qpiece =
@@ -233,7 +295,7 @@ showPerspective qboard qpiece =
         p : Piece
         p = toNormalPiece qpiece
     in
-        filterBoards (List.member p) qboard
+        showPerspectiveOfPiece qboard p
 
 toNormalPiece : QPiece -> Piece
 toNormalPiece qp =
