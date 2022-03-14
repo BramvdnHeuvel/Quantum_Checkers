@@ -48,6 +48,11 @@ startQBoard = [ { board = startBoard
 
 -- UPDATE
 
+hasCaptureAvailable : QBoard -> Bool
+hasCaptureAvailable qboard =
+    qBoardmap Board.hasCaptureAvailable qboard
+        |> List.any (\x -> x)
+
 canMove : QBoard -> QPiece -> Bool
 canMove qboard qpiece =
     canMoveTo qboard qpiece
@@ -59,17 +64,24 @@ canMoveTo qboard qpiece =
     let
         piece = toNormalPiece qpiece
     in
-        showPerspective qboard qpiece
-            |> qBoardmap (Board.canWalkTo piece)
-            |> List.concat
-            |> unique
+        if hasCaptureAvailable qboard then
+            showPerspective qboard qpiece
+                |> qBoardmap (Board.canCaptureTo piece)
+                |> List.concat
+                |> unique
+        else
+            showPerspective qboard qpiece
+                |> qBoardmap (Board.canWalkTo piece)
+                |> List.concat
+                |> unique
 
 canQuantum : QBoard -> QPiece -> Bool
 canQuantum qboard qpiece =
-    if List.length (canMoveTo qboard qpiece) >= 2 then
-        List.length (makeQuantumMove qboard qpiece) <= maxQuantumBoards
-    else
+    if hasCaptureAvailable qboard then
         False
+    else
+        List.map .board qboard
+            |> List.any (Board.canQuantum <| toNormalPiece qpiece)
 
 reduceWeights : QBoard -> QBoard
 reduceWeights qboard =

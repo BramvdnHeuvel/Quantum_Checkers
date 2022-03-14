@@ -1,5 +1,5 @@
 module Board exposing (Board, Piece, Player(..), PieceSize(..), MoveResponse(..)
-                      , boardSize, startBoard, canWalkTo, movePiece
+                      , boardSize, startBoard, canWalkTo, movePiece, canQuantum, canCaptureTo, canCaptureThere, hasCaptureAvailable
                       )
 
 -- MODEL
@@ -30,9 +30,61 @@ type MoveResponse
     | InvalidDestination
 
 startBoard : Board
-startBoard = startPieces 4
+startBoard = startPieces 4 -- ++ [Piece White Double 7 3]
 
 -- UPDATE
+
+hasCaptureAvailable : Board -> Bool
+hasCaptureAvailable board =
+    List.any (canCapture board) board
+
+canCapture : Board -> Piece -> Bool
+canCapture board piece =
+    List.length (canCaptureTo piece board) > 0
+
+canCaptureThere : Board -> Piece -> Int -> Int -> Bool
+canCaptureThere board piece x y =
+    List.member (x, y) <| canCaptureTo piece board
+
+canCaptureTo : Piece -> Board -> List (Int, Int)
+canCaptureTo piece board =
+    let
+        relCoords : Int -> Int -> (Int, Int)
+        relCoords dx dy =
+            (piece.x + dx, piece.y + dy)
+        
+        getRange : Int -> List (Int, Int)
+        getRange r =
+            [ relCoords (-1*r) (-1*r)
+            , relCoords (-1*r) ( 1*r)
+            , relCoords ( 1*r) (-1*r)
+            , relCoords ( 1*r) ( 1*r)
+            ]
+        
+        canSlayAPiece : (Int, Int) -> Bool
+        canSlayAPiece (x, y) =
+            let
+                middlePieces : List Piece
+                middlePieces = onPath board piece.x piece.y x y
+            in
+                if List.length middlePieces == 1 then
+                    if lookUpSpot board x y == Nothing then
+                        case middlePieces of
+                            [] ->
+                                False
+                            head :: tail ->
+                                head.owner /= piece.owner
+                    else
+                        False
+                else
+                    False
+    in
+        (if piece.size == Single then 2 else boardSize)
+            |> List.range 2
+            |> List.map getRange
+            |> List.concat
+            |> List.filter withinBounds
+            |> List.filter canSlayAPiece
 
 canWalkTo : Piece -> Board -> List (Int, Int)
 canWalkTo piece board =
@@ -76,6 +128,10 @@ canWalkThere board piece x y =
     canWalkTo piece board
         |> List.member (x, y)
 
+canQuantum : Piece -> Board -> Bool
+canQuantum piece board =
+    List.length (canWalkTo piece board) >= 2
+
 lookUpSpot : Board -> Int -> Int -> Maybe Piece
 lookUpSpot board x y =
     board
@@ -93,13 +149,18 @@ movePiece board piece x y =
             else
                 p
     in
-        if not <| withinBounds (x, y) then
+        if hasCaptureAvailable board then
+            -- A capture is possible
             InvalidDestination
-        else if not <| canWalkThere board piece x y then
-            InvalidDestination
-        else 
-            List.map selectMovedPiece board
-                |> SuccessNewTurn
+        else
+            -- Nothing to capture
+            if not <| withinBounds (x, y) then
+                InvalidDestination
+            else if not <| canWalkThere board piece x y then
+                InvalidDestination
+            else 
+                List.map selectMovedPiece board
+                    |> SuccessNewTurn
 
 onPath : Board -> Int -> Int -> Int -> Int -> List Piece
 onPath board x1 y1 x2 y2 =
@@ -125,7 +186,7 @@ startPieces rows =
         fillRow color y =
             List.range 1 boardSize
                 |> List.filter (\x -> modBy 2 (x + y) == 0)
-                |> List.map (\x -> Piece color Single x y)
+                |> List.map (\x -> Piece color Single  x y)
 
         fillRows : Int -> Int -> Player -> List Piece
         fillRows start end color =
