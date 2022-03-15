@@ -1,9 +1,9 @@
-module Layout exposing (showBoard)
+module Layout exposing (showBoard, qubitBar)
 
 import Html exposing   ( Html
-                       , b, div, span, text
+                       , b, div, span, text, progress
                        )
-import Html.Attributes exposing (  style  )
+import Html.Attributes exposing (  style  , value )
 import Html.Events     exposing ( onClick )
 
 import Board   exposing ( Player(..), PieceSize(..) 
@@ -70,9 +70,46 @@ showBoard game =
                         []
                 _ ->
                     []
+        
+        canCapturePieces : List (Html Msg)
+        canCapturePieces =
+            if game.showMode == Idle then
+                if QBoard.hasCaptureAvailable game.board game.turn then
+                    QBoard.quantumView game.board
+                        |> List.filter (QBoard.canMove game.board game.turn)
+                        |> List.filter (\p -> p.owner == game.turn)
+                        |> List.map (\p -> showOptionButton "orange" (p.x, p.y))
+                else
+                    []
+            else
+                []
     in
-        emptySquares ++ pieces ++ optionalMoves ++ quantumMove
+        emptySquares ++ pieces ++ optionalMoves ++ quantumMove ++ canCapturePieces
             |> boardWrapper
+
+qubitBar : GameView -> Html Msg
+qubitBar game =
+    let
+        qubits : Html.Attribute msg
+        qubits = game.board
+            |> List.length
+            |> toFloat
+            |> logBase 2
+            |> String.fromFloat
+            |> value
+        
+        maxQubits : Html.Attribute msg
+        maxQubits = QBoard.maxQuantumBoards
+            |> toFloat
+            |> logBase 2
+            |> String.fromFloat
+            |> Html.Attributes.max
+    in
+        progress
+            [ maxQubits
+            , qubits
+            ]
+            []
 
 -- UPDATE
 

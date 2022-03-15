@@ -6,6 +6,8 @@ import Html exposing (Html, div, p, text)
 import Game exposing (GameView)
 import Layout exposing (showBoard)
 import Message exposing (Msg(..))
+import Html.Attributes exposing (id)
+import Layout exposing (qubitBar)
 
 main : Program () Model Msg
 main = Browser.element
@@ -54,8 +56,9 @@ subscriptions _ =
 
 view : Model -> Html Msg
 view model = div
-    []
+    [ id "checkers" ]
     [ showBoard model
+    , qubitBar  model
     , p
         []
         [ text ((String.fromInt (List.length model.board)) ++ " quantum boards")

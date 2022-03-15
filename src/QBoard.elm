@@ -2,7 +2,7 @@ module QBoard exposing ( QBoard, QPiece, QuantumMoveResponse(..)
                        , lookupSpot, moveQPiece, toNormalPiece, resolveCollision
                        , showPerspective, startQBoard, quantumView, canMove
                        , canMoveTo, makeQuantumMove, optimizeQBoard, canQuantum
-                       , emptyAtSpot, showPerspectiveOfPiece
+                       , emptyAtSpot, showPerspectiveOfPiece, maxQuantumBoards, hasCaptureAvailable
                        )
 
 import Random
@@ -217,6 +217,7 @@ moveQPiece qboard player qpiece x y =
 
         in
             editBoards updateBoard qboard
+                |> editBoards Board.upgradeReachedPieces
                 |> optimizeQBoard
                 |> chooseMessage qboard
 
