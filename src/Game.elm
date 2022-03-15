@@ -38,6 +38,7 @@ measureAt game measure =
         Nothing ->
             ( { game
               | board = QBoard.emptyAtSpot game.board measure.x measure.y
+              , showMode = Idle
               }
             , Cmd.none
             )
