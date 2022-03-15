@@ -1,8 +1,9 @@
-module QBoard exposing ( QBoard, QPiece, QuantumMoveResponse(..)
+module QBoard exposing ( QBoard, QPiece, QuantumMoveResponse(..), Outcome(..)
                        , lookupSpot, moveQPiece, toNormalPiece, resolveCollision
                        , showPerspective, startQBoard, quantumView, canMove
                        , canMoveTo, makeQuantumMove, optimizeQBoard, canQuantum
-                       , emptyAtSpot, showPerspectiveOfPiece, maxQuantumBoards, hasCaptureAvailable
+                       , emptyAtSpot, showPerspectiveOfPiece, maxQuantumBoards
+                       , hasCaptureAvailable, gameHasEnded
                        )
 
 import Random
@@ -39,6 +40,10 @@ type QuantumMoveResponse
     | RepeatTurn QBoard QPiece
     | InvalidMove
 
+type Outcome
+    = WonBy Player
+    | Tie
+
 startQBoard : QBoard
 startQBoard = [ { board = startBoard
                 , weight = 1
@@ -46,6 +51,28 @@ startQBoard = [ { board = startBoard
               ]
 
 -- UPDATE
+
+gameHasEnded : QBoard -> Player -> Maybe Outcome
+gameHasEnded qboard playerOnTurn =
+    if canMoveAnywhere qboard playerOnTurn then
+        Nothing
+    else if hasPieceLeft qboard playerOnTurn then
+        Just Tie
+    else
+        Just <| WonBy <| Board.nextTurn playerOnTurn
+
+hasPieceLeft : QBoard -> Player -> Bool
+hasPieceLeft qboard player =
+    quantumView qboard
+        |> List.filter (\p -> p.owner == player)
+        |> List.isEmpty
+        |> not
+
+canMoveAnywhere : QBoard -> Player -> Bool
+canMoveAnywhere qboard player =
+    quantumView qboard
+        |> List.filter (\p -> p.owner == player)
+        |> List.any (canMove qboard player)
 
 hasCaptureAvailable : QBoard -> Player -> Bool
 hasCaptureAvailable qboard player =

@@ -6,7 +6,7 @@ import Html exposing (Html, div, p, text)
 import Game exposing (GameView)
 import Layout exposing (showBoard)
 import Message exposing (Msg(..))
-import Html.Attributes exposing (id)
+import Html.Attributes exposing (id, style)
 import Layout exposing (qubitBar)
 
 main : Program () Model Msg
@@ -56,7 +56,10 @@ subscriptions _ =
 
 view : Model -> Html Msg
 view model = div
-    [ id "checkers" ]
+    [ id "checkers"
+    , style "display" "flex"
+    , style "flex-flow" "column nowrap"
+    ]
     [ showBoard model
     , qubitBar  model
     , p

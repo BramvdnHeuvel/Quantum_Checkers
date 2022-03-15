@@ -1,7 +1,7 @@
 module Layout exposing (showBoard, qubitBar)
 
 import Html exposing   ( Html
-                       , b, div, span, text, progress
+                       , b, div, span, text, progress, h1
                        )
 import Html.Attributes exposing (  style  , value )
 import Html.Events     exposing ( onClick )
@@ -15,6 +15,7 @@ import Game    exposing ( GameView, BoardViewMode(..)
                         )
 import Message exposing (Msg(..), Measurement
                         )
+import QBoard exposing (Outcome(..))
 
 
 -- MODEL
@@ -28,12 +29,24 @@ nonValidFieldColor = "black"
 showBoard : GameView -> Html Msg
 showBoard game =
     let
+        grid : String
+        grid =
+            let
+                size : String
+                size = String.fromInt Board.boardSize
+            in
+                "repeat(" ++ size ++ ", 1fr)"
+            
+
         boardWrapper : List (Html Msg) -> Html Msg
         boardWrapper content = 
             div
                 [ style "display" "grid"
-                , style "grid-template" "repeat(10, 1fr) / repeat(10, 1fr)"
+                , style "grid-template" (grid ++ " / " ++ grid)
                 , style "aspect-ratio" "1 / 1"
+                , style "min-width" (String.fromInt (45 * Board.boardSize) ++ "px")
+                , style "max-width" "75vh"
+                , style "position" "relative"
                 ] 
                 content
         
@@ -44,7 +57,7 @@ showBoard game =
                     game.board
                 FromPerspectiveOf p ->
                     showPerspective game.board p
-                FinishedGame ->
+                FinishedGame _ ->
                     game.board
                 
         pieces : List (Html Msg)
@@ -83,8 +96,39 @@ showBoard game =
                     []
             else
                 []
+        
+        overlay : List (Html Msg)
+        overlay =
+            case game.showMode of
+                FinishedGame outcome ->
+                    case outcome of
+                        Tie ->
+                            gameOverlay
+                            [ h1 [] [text "TIE"]
+                            ]
+                        
+                        WonBy p ->
+                            case p of
+                                Black ->
+                                    gameOverlay
+                                    [ h1 [] [text "BLACK WINS"]
+                                    ]
+                                
+                                White ->
+                                    gameOverlay
+                                    [ h1 [] [text "WHITE WINS"]
+                                    ]
+                
+                _ ->
+                    []
     in
-        emptySquares ++ pieces ++ optionalMoves ++ quantumMove ++ canCapturePieces
+        ( emptySquares 
+        ++ pieces 
+        ++ optionalMoves 
+        ++ quantumMove 
+        ++ canCapturePieces
+        ++ overlay
+        )
             |> boardWrapper
 
 qubitBar : GameView -> Html Msg
@@ -112,6 +156,35 @@ qubitBar game =
             []
 
 -- UPDATE
+
+gameOverlay : List (Html Msg) -> List (Html Msg)
+gameOverlay content =
+    let
+        box : Html Msg
+        box =
+            div
+                [ style "background-color" "gray"
+                , style "border" "5px solid rgb(181, 154, 4)"
+                , style "padding" "20px"
+                , style "color" "rgb(255, 239, 153)"
+                , style "min-width" "40%"
+                , style "max-width" "80%"
+                , style "text-align" "center"
+                ]
+                content
+    in
+        div
+            [ style "position" "absolute"
+            , style "top"    "0"
+            , style "bottom" "0"
+            , style "left"   "0"
+            , style "right"  "0"
+            , style "display" "flex"
+            , style "justify-content" "center"
+            , style "align-items" "center"
+            ]
+            [ box ]
+            |> List.singleton
 
 emptySquares : List (Html Msg)
 emptySquares =
