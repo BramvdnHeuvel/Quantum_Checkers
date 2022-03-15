@@ -1,7 +1,7 @@
 module Board exposing (Board, Piece, Player(..), PieceSize(..), MoveResponse(..)
                       , boardSize, startBoard, canWalkTo, movePiece, canQuantum
                       , canCaptureTo, canCaptureThere, hasCaptureAvailable
-                      , lookUpSpot, nextTurn
+                      , lookUpSpot, nextTurn, upgradeReachedPieces
                       )
 
 -- MODEL
@@ -236,6 +236,21 @@ startPieces rows =
     in
         [fillRows 1 rows White, fillRows (1 + boardSize - rows) boardSize Black]
             |> List.concat
+
+upgradeReachedPieces : Board -> Board
+upgradeReachedPieces board =
+    let
+        updatePiece : Piece -> Piece
+        updatePiece piece =
+            let
+                y_level = if piece.owner == Black then 1 else 10
+            in
+                if piece.y == y_level then
+                    { piece | size = Double }
+                else
+                    piece
+    in
+        List.map updatePiece board
 
 withinBounds : (Int, Int) -> Bool
 withinBounds (x, y) =
