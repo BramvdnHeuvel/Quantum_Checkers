@@ -152,6 +152,7 @@ qubitBar game =
         progress
             [ maxQubits
             , qubits
+            , style "max-width" "75vh"
             ]
             []
 

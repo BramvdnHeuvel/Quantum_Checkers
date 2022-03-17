@@ -59,6 +59,7 @@ view model = div
     [ id "checkers"
     , style "display" "flex"
     , style "flex-flow" "column nowrap"
+    , style "align-items" "center"
     ]
     [ showBoard model
     , qubitBar  model
