@@ -106,8 +106,17 @@ canQuantum qboard player qpiece =
     if hasCaptureAvailable qboard player then
         False
     else
-        List.map .board qboard
-            |> List.any (Board.canQuantum <| toNormalPiece qpiece)
+        let
+            anyBoardAllowsQuantum : Bool
+            anyBoardAllowsQuantum = List.map .board qboard
+                |> List.any (Board.canQuantum <| toNormalPiece qpiece)
+        in
+            if anyBoardAllowsQuantum then
+                makeQuantumMove qboard player qpiece
+                    |> tooLarge
+                    |> not
+            else
+                False
 
 reduceWeights : QBoard -> QBoard
 reduceWeights qboard =
@@ -374,6 +383,12 @@ showPerspective qboard qpiece =
         p = toNormalPiece qpiece
     in
         showPerspectiveOfPiece qboard p
+
+tooLarge : QBoard -> Bool
+tooLarge qboard =
+    qboard
+        |> List.length
+        |> (\l -> l > maxQuantumBoards)
 
 toQPiece : QBoard -> Piece -> QPiece
 toQPiece qboard piece =

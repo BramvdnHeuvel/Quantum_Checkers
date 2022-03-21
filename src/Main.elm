@@ -4,10 +4,9 @@ import Browser
 import Html exposing (Html, div, p, text)
 
 import Game exposing (GameView)
-import Layout exposing (showBoard)
 import Message exposing (Msg(..))
 import Html.Attributes exposing (id, style)
-import Layout exposing (qubitBar)
+import Layout exposing (qubitBar, showBoard, turnBlock)
 
 main : Program () Model Msg
 main = Browser.element
@@ -61,11 +60,11 @@ view model = div
     , style "flex-flow" "column nowrap"
     , style "align-items" "center"
     ]
-    [ showBoard model
-    , qubitBar  model
-    , p
+    [ div
         []
-        [ text ((String.fromInt (List.length model.board)) ++ " quantum boards")
+        [ showBoard model
+        , qubitBar  model
+        , turnBlock model
         ]
     ]
 

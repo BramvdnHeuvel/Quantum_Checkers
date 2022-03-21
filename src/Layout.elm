@@ -1,10 +1,12 @@
-module Layout exposing (showBoard, qubitBar)
+module Layout exposing (showBoard, qubitBar, turnBlock)
 
 import Html exposing   ( Html
-                       , b, div, span, text, progress, h1
+                       , b, div, span, text, progress, h1, br
                        )
-import Html.Attributes exposing (  style  , value )
+import Html.Attributes exposing (  style  , class )
 import Html.Events     exposing ( onClick )
+
+import Round
 
 import Board   exposing ( Player(..), PieceSize(..) 
                         )
@@ -134,27 +136,88 @@ showBoard game =
 qubitBar : GameView -> Html Msg
 qubitBar game =
     let
-        qubits : Html.Attribute msg
+        qubits : Float
         qubits = game.board
             |> List.length
             |> toFloat
             |> logBase 2
-            |> String.fromFloat
-            |> value
         
-        maxQubits : Html.Attribute msg
+        maxQubits : Float
         maxQubits = QBoard.maxQuantumBoards
             |> toFloat
             |> logBase 2
-            |> String.fromFloat
-            |> Html.Attributes.max
+        
+        percentage : Float
+        percentage = 100 * (qubits / maxQubits)
     in
-        progress
-            [ maxQubits
-            , qubits
-            , style "max-width" "75vh"
+        div
+            [ class "progress"
             ]
-            []
+            [ div
+                [ class "progress-bar"
+                , style "width" (String.fromFloat percentage ++ "%")
+                ]
+                [ div
+                    [ class "qubit-label"
+                    ]
+                    [ div
+                        [ class "qubit-tooltip"
+                        , style "position" "absolute"
+                        ]
+                        [ text 
+                            ( "How many qubits are needed for this game:"
+                            ++ " (maximum " ++ (Round.round 1 maxQubits)
+                            ++ ")"
+                            )
+                        ]
+                    , br [] []
+                    , b
+                        [ style "margin" "auto"
+                        ]
+                        [ text <| Round.round 1 qubits ]
+                    ]
+                ]
+            , div
+                [ class "antiprogress-bar"
+                , style "width" (String.fromFloat (100 - percentage) ++ "%")
+                ]
+                []
+            ]
+
+turnBlock : GameView -> Html Msg
+turnBlock game =
+    let
+        color : String
+        color =
+            case game.turn of
+                Black ->
+                    "black"
+                White ->
+                    "white"
+
+        antiColor : String
+        antiColor =
+            case game.turn of
+                Black -> "white"
+                White -> "black"
+        
+        turnText : String
+        turnText =
+            case game.turn of
+                Black ->
+                    "BLACK'S TURN"
+                White ->
+                    "WHITE'S TURN"
+    in
+        div
+            [ class "style-block"
+            , style "height" "50px"
+            , style "width" "100%"
+            , style "background-color" color
+            , style "display" "flex"
+            , style "color" antiColor
+            ]
+            [ h1 [ style "margin" "auto" ] [ text turnText ] ]
 
 -- UPDATE
 
