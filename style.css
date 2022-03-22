@@ -1,0 +1,77 @@
+:root {
+    --progress-bar-size : 50px;
+
+    --quantum-background-color:  rgb(145, 145, 248);
+    --quantum-transparent-color: rgba(145, 145, 248, 0.685);
+}
+
+@keyframes appear {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+body {
+    background-color: var(--quantum-background-color);
+}
+
+#checkers > div {
+    margin: 50px;
+}
+
+.progress {
+    height: var(--progress-bar-size);
+    margin: var(--progress-bar-size) 0 calc(0.25 * var(--progress-bar-size));
+    background-image: linear-gradient(to left, #ff0000, rgb(0, 128, 0));
+
+    display: flex;
+}
+.progress:hover .qubit-tooltip {
+    display: block;
+    animation: appear 1s ease-out;
+}
+
+.progress-bar {
+    height: 100%;
+    position: relative;
+}
+
+.antiprogress-bar {
+    height: 100%;
+    background-color: var(--quantum-transparent-color);
+}
+
+.qubit-label {
+    height: 125%;
+    aspect-ratio: 1 / 1;
+    border-radius: 100%;
+    background-color: hsl(58, 90%, 69%);
+
+    margin-left: 100%;
+
+    position: relative;
+    right:  calc(0.625 * var(--progress-bar-size));
+    bottom: calc(0.125 * var(--progress-bar-size));
+
+    display: flex;
+    font-size: calc(0.8 * var(--progress-bar-size));
+}
+
+.qubit-tooltip {
+    display: none;
+
+    font-size: calc(0.3 * var(--progress-bar-size));
+    background-color: white;
+    border-radius: 15px;
+    padding: 15px;
+
+    width: calc(4 * var(--progress-bar-size));
+
+    position: absolute;
+    bottom: calc(1.25 * var(--progress-bar-size));
+    left: calc(-1.5 * var(--progress-bar-size))
+}
+
