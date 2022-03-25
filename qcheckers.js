@@ -6369,7 +6369,6 @@ var $author$project$QBoard$spotCollision = function (qboard) {
 					return $elm$core$Maybe$Nothing;
 				} else {
 					var belly = body.a;
-					var tail = body.b;
 					if (_Utils_eq(head, belly)) {
 						return $elm$core$Maybe$Just(head);
 					} else {

@@ -1,7 +1,7 @@
 module Layout exposing (showBoard, qubitBar, turnBlock)
 
 import Html exposing   ( Html
-                       , b, div, span, text, progress, h1, br
+                       , b, div, span, text, h1, br
                        )
 import Html.Attributes exposing (  style  , class )
 import Html.Events     exposing ( onClick )
@@ -15,8 +15,7 @@ import QBoard  exposing ( QBoard, QPiece
                         )
 import Game    exposing ( GameView, BoardViewMode(..)
                         )
-import Message exposing (Msg(..), Measurement
-                        )
+import Message exposing (Msg(..))
 import QBoard exposing (Outcome(..))
 
 

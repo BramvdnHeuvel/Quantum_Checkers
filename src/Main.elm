@@ -1,7 +1,7 @@
 module Main exposing (main)
 
 import Browser
-import Html exposing (Html, div, p, text)
+import Html exposing (Html, div)
 
 import Game exposing (GameView)
 import Message exposing (Msg(..))

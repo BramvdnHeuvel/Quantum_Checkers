@@ -215,10 +215,6 @@ onPath board x1 y1 x2 y2 =
     in
         List.filterMap (\(x, y) -> lookUpSpot board x y) spots
 
-removePiece : Piece -> Board -> Board
-removePiece piece board =
-    List.filter (\p -> p /= piece) board
-
 startPieces : Int -> List Piece
 startPieces rows =
     let

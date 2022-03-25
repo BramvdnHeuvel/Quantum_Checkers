@@ -335,7 +335,7 @@ spotCollision qboard =
                         [] ->
                             Nothing
                         
-                        belly :: tail ->
+                        belly :: _ ->
                             if head == belly then
                                 Just head
                             else
