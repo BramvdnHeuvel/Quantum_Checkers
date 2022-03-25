@@ -239,7 +239,7 @@ upgradeReachedPieces board =
         updatePiece : Piece -> Piece
         updatePiece piece =
             let
-                y_level = if piece.owner == Black then 1 else 10
+                y_level = if piece.owner == Black then 1 else boardSize
             in
                 if piece.y == y_level then
                     { piece | size = Double }
