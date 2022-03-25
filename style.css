@@ -18,6 +18,14 @@ body {
     background-color: var(--quantum-background-color);
 }
 
+header {
+    display: grid;
+    grid-template: 1fr / repeat(5, 1fr);
+    justify-content: space-evenly;
+    font-size: x-large;
+    text-align: center;
+}
+
 #checkers > div {
     margin: 50px;
 }
